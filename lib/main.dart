@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
 // --- IMPORTS INTERNES ---
-import 'page_rappel.dart';
+
 import 'classification.dart';
 import 'declassement.dart';
 import 'intervention.dart';
@@ -59,7 +59,6 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _pages = [
     const PageAccueil(key: ValueKey('Accueil')),
     const PageInventaire(key: ValueKey('Inventaire')),
-    PageRappel(),
     ClassificationPage(),
     DeclassementClientPage(),
     InterventionPage(),
@@ -104,7 +103,6 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(icon: Icon(Icons.home), label: 'Accueil'),
           NavigationDestination(
               icon: Icon(Icons.inventory_2), label: 'Inventaire'),
-          NavigationDestination(icon: Icon(Icons.alarm), label: 'Rappel'),
           NavigationDestination(
               icon: Icon(Icons.category), label: 'Classification'),
           NavigationDestination(
@@ -199,9 +197,9 @@ class _PageInventaireState extends State<PageInventaire> {
   ];
   final List<Map<String, dynamic>> matieresBalle = [
     {'nom': 'Carton', 'coef': 0.8},
-    {'nom': 'Petite balle de carton'},
-    {'nom': 'Films plastiques', 'coef': 0.62},
-    {'nom': 'Petite balle plastique'},
+    {'nom': 'Petite balle de carton', 'coef': 0.5},
+    {'nom': 'Films plastiques', 'coef': 0.35},
+    {'nom': 'Petite balle plastique', 'coef': 0.25},
     {'nom': 'Plastique rigide', 'coef': 0.25},
     {'nom': 'Papier', 'coef': 0.7},
     {'nom': 'Refus', 'coef': 0.8},
@@ -366,7 +364,7 @@ class _PageInventaireState extends State<PageInventaire> {
       String emailSubject =
           'Inventaire $nom - ${DateFormat('dd/MM/yyyy').format(date)}';
       String emailBody =
-          'Inventaire de fin de mois réalisé pour le nom inscrit : $nom.\n\nFichiers joints : PDF & CSV.\nDate : $dateStr';
+          'Inventaire de fin de mois réalisé par : $nom.\n\nFichiers joints : PDF & CSV.\nDate : $dateStr';
 
       // Ouvre le partage avec PDF + CSV en pièces jointes
       await Share.shareXFiles(

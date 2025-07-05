@@ -9,15 +9,15 @@ class DeclassementClientPage extends StatefulWidget {
 }
 
 class _DeclassementClientPageState extends State<DeclassementClientPage> {
-  double _pourcentage = 100.0; // Pourcentage sélectionné par le slider
+  double _pourcentage = 100.0; // Pourcentage du slider
   final TextEditingController _clientController =
       TextEditingController(); // Nom du client
   final TextEditingController _commentaireController =
       TextEditingController(); // Commentaire optionnel
-  List<File> _images = []; // Liste des photos sélectionnées
+  List<File> _images = []; // Photos sélectionnées
   final ImagePicker _picker = ImagePicker();
 
-  // Les deux adresses mail toujours présentes comme destinataires
+  // Destinataires du mail (toujours présents)
   final List<String> _destinataires = [
     'claire.lagarrigue@enso-valo.com',
     'laetitia.mazzara@enso-valo.com'
@@ -299,13 +299,13 @@ class _DeclassementClientPageState extends State<DeclassementClientPage> {
     );
   }
 
-  // Bouton principal d'envoi (appelle la méthode d'envoi mail)
+  // Bouton principal d'envoi (mail pré-rempli)
   Widget _buildBoutonEnvoyer() {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: _envoyerParMailPreRempli, // Méthode qui utilise share_plus !
+        onPressed: _envoyerParMailPreRempli, // La méthode d'envoi
         icon: Icon(Icons.send, color: Colors.white),
         label: Text(
           'Envoyer le déclassement',
@@ -361,21 +361,21 @@ class _DeclassementClientPageState extends State<DeclassementClientPage> {
       return;
     }
 
-    // L'objet du mail est le nom du client
-    String objet = _clientController.text.trim();
-
-    // Format date, exemple : 21/06/2025 19:45
+    // -------- Objet du mail personnalisé ---------
+    // Exemple : "Déclassement Dupont - 05/07/2025 - 86%"
     String dateString = "${DateTime.now().day.toString().padLeft(2, '0')}/"
         "${DateTime.now().month.toString().padLeft(2, '0')}/"
-        "${DateTime.now().year} "
-        "${DateTime.now().hour.toString().padLeft(2, '0')}:"
-        "${DateTime.now().minute.toString().padLeft(2, '0')}";
+        "${DateTime.now().year}";
+    String objet =
+        "Déclassement ${_clientController.text.trim()} - $dateString - ${_pourcentage.toInt()}%";
 
-    // Le corps du mail contient tous les éléments demandés, avec les deux adresses visibles
+    // Format date et heure pour le corps du mail
+    String heureString = "${DateTime.now().hour.toString().padLeft(2, '0')}:"
+        "${DateTime.now().minute.toString().padLeft(2, '0')}";
     String corps = "Déclassement client\n"
         "Nom du client : ${_clientController.text}\n"
         "Pourcentage de déclassement : ${_pourcentage.toInt()}%\n"
-        "Date : $dateString\n"
+        "Date : $dateString $heureString\n"
         "${_commentaireController.text.isNotEmpty ? 'Commentaire : ${_commentaireController.text}\n' : ''}"
         "\nÀ envoyer à : ${_destinataires.join(', ')}\n"
         "Envoyé via l'application Enso Estérel.";
@@ -383,10 +383,10 @@ class _DeclassementClientPageState extends State<DeclassementClientPage> {
     // Prépare les photos à partager
     List<XFile> fichiers = _images.map((f) => XFile(f.path)).toList();
 
-    // Lance le client mail avec toutes les infos + images
+    // Envoi avec share_plus
     await Share.shareXFiles(
       fichiers,
-      subject: objet,
+      subject: objet, // l’objet du mail avec toutes les infos demandées
       text: corps,
     );
   }

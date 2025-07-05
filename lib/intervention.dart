@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:signature/signature.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -7,12 +6,14 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// Petite fonction utilitaire pour formater une heure au format 2 chiffres (ex: 09:05)
 String _formatHeure(TimeOfDay heure) {
   final h = heure.hour.toString().padLeft(2, '0');
   final m = heure.minute.toString().padLeft(2, '0');
   return '$h:$m';
 }
 
+/// Page d'intervention mécanique, formulaire de saisie et génération de PDF (sans signature)
 class InterventionPage extends StatefulWidget {
   @override
   _InterventionPageState createState() => _InterventionPageState();
@@ -21,23 +22,16 @@ class InterventionPage extends StatefulWidget {
 class _InterventionPageState extends State<InterventionPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Contrôleurs de texte
+  // Contrôleurs de texte pour récupérer les saisies utilisateur
   final TextEditingController _entrepriseController = TextEditingController();
   final TextEditingController _typePanneController = TextEditingController();
 
-  // Variables pour les dates et heures
+  // Variables de date et heure, initialisées à la date/heure actuelles
   DateTime _dateJour = DateTime.now();
   TimeOfDay? _heureArrivee;
   TimeOfDay? _heureFin;
 
-  // Contrôleur de signature
-  final SignatureController _signatureController = SignatureController(
-    penStrokeWidth: 3,
-    penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
-  );
-
-  bool _isLoading = false;
+  bool _isLoading = false; // Affichage du loader lors de la génération PDF
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +48,7 @@ class _InterventionPageState extends State<InterventionPage> {
         backgroundColor: Colors.blue[800],
         elevation: 4,
       ),
+      // Le formulaire est scrollable pour s'adapter à tous les écrans
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Form(
@@ -61,15 +56,13 @@ class _InterventionPageState extends State<InterventionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionEntreprise(),
+              _buildSectionEntreprise(), // Bloc nom entreprise
               SizedBox(height: 20),
-              _buildSectionDatesHeures(),
+              _buildSectionDatesHeures(), // Bloc date et heures
               SizedBox(height: 20),
-              _buildSectionTypePanne(),
-              SizedBox(height: 20),
-              _buildSectionSignature(),
+              _buildSectionTypePanne(), // Bloc description de la panne
               SizedBox(height: 32),
-              _buildBoutonEnvoi(),
+              _buildBoutonEnvoi(), // Bouton pour générer et partager le PDF
             ],
           ),
         ),
@@ -77,6 +70,7 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
+  /// Bloc UI : informations sur l'entreprise
   Widget _buildSectionEntreprise() {
     return Card(
       elevation: 4,
@@ -122,6 +116,7 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
+  /// Bloc UI : sélection de la date et des heures d'intervention
   Widget _buildSectionDatesHeures() {
     return Card(
       elevation: 4,
@@ -141,7 +136,7 @@ class _InterventionPageState extends State<InterventionPage> {
             ),
             SizedBox(height: 16),
 
-            // Date du jour (automatique)
+            // Date du jour (remplie automatiquement)
             ListTile(
               leading: Icon(Icons.today, color: Colors.green[600]),
               title: Text('Date du jour'),
@@ -153,7 +148,7 @@ class _InterventionPageState extends State<InterventionPage> {
             ),
             SizedBox(height: 12),
 
-            // Heures
+            // Sélection des heures d'arrivée et de fin
             Row(
               children: [
                 Expanded(
@@ -194,6 +189,7 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
+  /// Bloc UI : description de la panne
   Widget _buildSectionTypePanne() {
     return Card(
       elevation: 4,
@@ -240,64 +236,7 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
-  Widget _buildSectionSignature() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Signature',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    _signatureController.clear();
-                  },
-                  icon: Icon(Icons.clear, color: Colors.red),
-                  label: Text('Effacer', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[400]!, width: 2),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[50],
-              ),
-              child: Signature(
-                controller: _signatureController,
-                backgroundColor: Colors.white,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Signez dans le cadre ci-dessus',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Unique bouton d'envoi pour générer le PDF et le partager
   Widget _buildBoutonEnvoi() {
     return SizedBox(
       width: double.infinity,
@@ -333,6 +272,7 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
+  /// Sélection de l'heure via le sélecteur natif Flutter
   Future<void> _selectionnerHeure(bool isArrivee) async {
     final TimeOfDay? heure = await showTimePicker(
       context: context,
@@ -352,6 +292,7 @@ class _InterventionPageState extends State<InterventionPage> {
     }
   }
 
+  /// Génère le PDF, sauvegarde en temporaire, puis lance le partage natif
   Future<void> _genererEtPartagerPDF() async {
     if (!_formKey.currentState!.validate()) {
       _afficherMessage('Veuillez remplir tous les champs obligatoires',
@@ -365,29 +306,25 @@ class _InterventionPageState extends State<InterventionPage> {
       return;
     }
 
-    if (_signatureController.isEmpty) {
-      _afficherMessage('Veuillez signer le document', isError: true);
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Générer le PDF
+      // 1. Génération du PDF
       final pdf = await _genererPDF();
 
-      // Sauvegarder le PDF
+      // 2. Sauvegarde sur le stockage temporaire de l'appareil
       final directory = await getTemporaryDirectory();
       final file = File(
           '${directory.path}/intervention_${DateTime.now().millisecondsSinceEpoch}.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      // PARTAGE NATIF
+      // 3. Partage natif (mail, Whatsapp, etc.)
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: "Rapport d'intervention PDF généré via l'application.",
+        text:
+            "Rapport d'intervention PDF généré via l'application enso estérel.",
         subject: "Rapport d'intervention - ${_entrepriseController.text}",
       );
 
@@ -403,11 +340,9 @@ class _InterventionPageState extends State<InterventionPage> {
     }
   }
 
+  /// Fonction qui génère le PDF à partir des champs saisis
   Future<pw.Document> _genererPDF() async {
     final pdf = pw.Document();
-
-    // Convertir la signature en image
-    final signatureImage = await _signatureController.toPngBytes();
 
     pdf.addPage(
       pw.Page(
@@ -416,7 +351,7 @@ class _InterventionPageState extends State<InterventionPage> {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // En-tête
+              // EN-TÊTE
               pw.Container(
                 width: double.infinity,
                 padding: pw.EdgeInsets.all(20),
@@ -437,7 +372,7 @@ class _InterventionPageState extends State<InterventionPage> {
               ),
               pw.SizedBox(height: 30),
 
-              // Informations
+              // INFOS GÉNÉRALES
               pw.Container(
                 padding: pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
@@ -462,7 +397,7 @@ class _InterventionPageState extends State<InterventionPage> {
               ),
               pw.SizedBox(height: 20),
 
-              // Type de panne
+              // TYPE DE PANNE
               pw.Container(
                 padding: pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
@@ -481,39 +416,10 @@ class _InterventionPageState extends State<InterventionPage> {
                   ],
                 ),
               ),
-              pw.SizedBox(height: 20),
-
-              // Signature
-              pw.Container(
-                padding: pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300),
-                  borderRadius: pw.BorderRadius.circular(8),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('SIGNATURE',
-                        style: pw.TextStyle(
-                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                    pw.SizedBox(height: 10),
-                    pw.Container(
-                      height: 100,
-                      width: 200,
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColors.grey400),
-                      ),
-                      child: signatureImage != null
-                          ? pw.Image(pw.MemoryImage(signatureImage))
-                          : pw.Center(child: pw.Text('Pas de signature')),
-                    ),
-                  ],
-                ),
-              ),
 
               pw.Spacer(),
 
-              // Pied de page
+              // PIED DE PAGE : date et heure de génération
               pw.Center(
                 child: pw.Text(
                   'Document généré le ${DateFormat('dd/MM/yyyy à HH:mm').format(DateTime.now())}',
@@ -525,10 +431,10 @@ class _InterventionPageState extends State<InterventionPage> {
         },
       ),
     );
-
     return pdf;
   }
 
+  /// Fonction utilitaire pour formater une ligne dans le PDF
   pw.Widget _buildPDFRow(String label, String value) {
     return pw.Padding(
       padding: pw.EdgeInsets.symmetric(vertical: 4),
@@ -548,10 +454,10 @@ class _InterventionPageState extends State<InterventionPage> {
     );
   }
 
+  /// Réinitialisation du formulaire après envoi
   void _reinitialiserFormulaire() {
     _entrepriseController.clear();
     _typePanneController.clear();
-    _signatureController.clear();
     setState(() {
       _heureArrivee = null;
       _heureFin = null;
@@ -559,6 +465,7 @@ class _InterventionPageState extends State<InterventionPage> {
     });
   }
 
+  /// Affiche un message (vert ou rouge) en bas de l'écran
   void _afficherMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -574,7 +481,6 @@ class _InterventionPageState extends State<InterventionPage> {
   void dispose() {
     _entrepriseController.dispose();
     _typePanneController.dispose();
-    _signatureController.dispose();
     super.dispose();
   }
 }
